@@ -5,6 +5,10 @@ from services.weather import get_weather
 from services.earthquake import get_earthquakes
 from services.satellite import get_satellite_layer
 
+from risk.flood import calculate_flood_risk
+from risk.cyclone import calculate_cyclone_risk
+from risk.earthquake import calculate_earthquake_risk
+
 
 app = FastAPI(
     title="AASRA API",
@@ -13,7 +17,7 @@ app = FastAPI(
 )
 
 
-# Allow the frontend to communicate with the backend
+# Allow our frontend to communicate with the backend
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -22,6 +26,10 @@ app.add_middleware(
     allow_headers=["*"]
 )
 
+
+# ---------------------------------------------------------
+# BASIC ROUTES
+# ---------------------------------------------------------
 
 @app.get("/")
 def home():
@@ -39,6 +47,10 @@ def health_check():
     }
 
 
+# ---------------------------------------------------------
+# LIVE WEATHER
+# ---------------------------------------------------------
+
 @app.get("/api/weather")
 def weather(latitude: float, longitude: float):
 
@@ -51,6 +63,10 @@ def weather(latitude: float, longitude: float):
             detail=f"Unable to fetch weather data: {str(error)}"
         )
 
+
+# ---------------------------------------------------------
+# LIVE EARTHQUAKE DATA
+# ---------------------------------------------------------
 
 @app.get("/api/earthquakes")
 def earthquakes(
@@ -78,7 +94,96 @@ def earthquakes(
         )
 
 
+# ---------------------------------------------------------
+# SATELLITE
+# ---------------------------------------------------------
+
 @app.get("/api/satellite")
 def satellite():
 
     return get_satellite_layer()
+
+
+# ---------------------------------------------------------
+# FLOOD RISK
+# ---------------------------------------------------------
+
+@app.get("/api/risk/flood")
+def flood_risk(
+    rainfall: float,
+    humidity: float,
+    precipitation: float = 0,
+    elevation: float = 100
+):
+
+    try:
+        result = calculate_flood_risk(
+            rainfall=rainfall,
+            humidity=humidity,
+            precipitation=precipitation,
+            elevation=elevation
+        )
+
+        return result
+
+    except Exception as error:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Unable to calculate flood risk: {str(error)}"
+        )
+
+
+# ---------------------------------------------------------
+# CYCLONE RISK
+# ---------------------------------------------------------
+
+@app.get("/api/risk/cyclone")
+def cyclone_risk(
+    wind_speed: float,
+    pressure: float,
+    rainfall: float = 0,
+    humidity: float = 0
+):
+
+    try:
+        result = calculate_cyclone_risk(
+            wind_speed=wind_speed,
+            pressure=pressure,
+            rainfall=rainfall,
+            humidity=humidity
+        )
+
+        return result
+
+    except Exception as error:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Unable to calculate cyclone risk: {str(error)}"
+        )
+
+
+# ---------------------------------------------------------
+# EARTHQUAKE RISK
+# ---------------------------------------------------------
+
+@app.get("/api/risk/earthquake")
+def earthquake_risk(
+    magnitude: float,
+    depth_km: float,
+    distance_km: float
+):
+
+    try:
+        result = calculate_earthquake_risk(
+            magnitude=magnitude,
+            depth_km=depth_km,
+            distance_km=distance_km
+        )
+
+        return result
+
+    except Exception as error:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Unable to calculate earthquake risk: {str(error)}"
+        )
