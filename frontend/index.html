@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    />
+
+    <meta
+        name="description"
+        content="AASRA - AI-powered disaster intelligence and risk monitoring platform."
+    />
+
+    <meta
+        name="theme-color"
+        content="#08111f"
+    />
+
+    <title>AASRA | Disaster Intelligence Platform</title>
+
+    <!-- Leaflet map styles -->
+    <link
+        rel="stylesheet"
+        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIINfQ3V7ZbG3wG8R4R7F8v7R7xF0L1F0g="
+        crossorigin=""
+    />
+
+    <!-- AASRA stylesheet -->
+    <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+
+    <!-- =========================
+         HEADER
+    ========================== -->
+    <header class="topbar">
+
+        <div class="container nav-wrapper">
+
+            <a href="#home" class="brand">
+                <span class="brand-mark">A</span>
+
+                <span>
+                    <strong>AASRA</strong>
+                    <small>Disaster Intelligence</small>
+                </span>
+            </a>
+
+            <nav class="navigation">
+                <a href="#home">Home</a>
+                <a href="#monitor">Monitor</a>
+                <a href="#risk">Risk</a>
+                <a href="#satellite">Satellite</a>
+                <a href="#about">About</a>
+            </nav>
+
+            <button
+                class="mobile-menu-button"
+                id="mobileMenuButton"
+                aria-label="Open navigation menu"
+            >
+                ☰
+            </button>
+
+        </div>
+
+    </header>
+
+
+    <main>
+
+        <!-- =========================
+             HERO SECTION
+        ========================== -->
+        <section class="hero" id="home">
+
+            <div class="hero-background"></div>
+
+            <div class="container hero-content">
+
+                <div class="hero-copy">
+
+                    <div class="status-pill">
+                        <span class="status-dot"></span>
+                        Disaster intelligence system
+                    </div>
+
+                    <h1>
+                        Understand risk.
+                        <span>Act earlier.</span>
+                    </h1>
+
+                    <p>
+                        AASRA brings disaster monitoring, environmental
+                        intelligence, risk assessment and emergency
+                        information together in one platform.
+                    </p>
+
+                    <div class="hero-actions">
+
+                        <a
+                            href="#monitor"
+                            class="button button-primary"
+                        >
+                            Explore Dashboard
+                        </a>
+
+                        <a
+                            href="#about"
+                            class="button button-secondary"
+                        >
+                            Learn About AASRA
+                        </a>
+
+                    </div>
+
+                    <div class="hero-note">
+                        <span>●</span>
+                        Built for flood, cyclone and earthquake awareness
+                    </div>
+
+                </div>
+
+
+                <div class="hero-panel">
+
+                    <div class="panel-header">
+                        <div>
+                            <span class="eyebrow">LIVE OVERVIEW</span>
+                            <h3>National Risk Snapshot</h3>
+                        </div>
+
+                        <span class="live-badge">
+                            <span></span>
+                            Monitoring
+                        </span>
+                    </div>
+
+                    <div class="risk-ring">
+
+                        <div class="ring-inner">
+                            <strong id="overallRiskValue">--</strong>
+                            <span>Risk Index</span>
+                        </div>
+
+                    </div>
+
+                    <div class="snapshot-grid">
+
+                        <div class="snapshot-item">
+                            <span>Flood</span>
+                            <strong id="floodRiskValue">--</strong>
+                        </div>
+
+                        <div class="snapshot-item">
+                            <span>Cyclone</span>
+                            <strong id="cycloneRiskValue">--</strong>
+                        </div>
+
+                        <div class="snapshot-item">
+                            <span>Earthquake</span>
+                            <strong id="earthquakeRiskValue">--</strong>
+                        </div>
+
+                    </div>
+
+                    <p class="demo-label">
+                        Waiting for live intelligence data
+                    </p>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =========================
+             DISASTER MONITORING
+        ========================== -->
+        <section class="section" id="monitor">
+
+            <div class="container">
+
+                <div class="section-heading">
+
+                    <div>
+                        <span class="eyebrow">MONITOR</span>
+
+                        <h2>
+                            Disaster intelligence at a glance
+                        </h2>
+                    </div>
+
+                    <p>
+                        Track major disaster categories from a single
+                        operational dashboard.
+                    </p>
+
+                </div>
+
+
+                <div class="disaster-grid">
+
+                    <!-- Flood -->
+                    <article class="disaster-card">
+
+                        <div class="card-icon flood-icon">
+                            ≋
+                        </div>
+
+                        <div class="card-content">
+
+                            <div class="card-topline">
+                                <span>01</span>
+                                <span class="card-status">
+                                    Monitoring
+                                </span>
+                            </div>
+
+                            <h3>Flood Risk</h3>
+
+                            <p>
+                                Monitor rainfall, water-related conditions
+                                and areas that may require additional
+                                attention.
+                            </p>
+
+                            <div class="risk-bar">
+                                <span style="width: 0%" id="floodBar"></span>
+                            </div>
+
+                            <div class="card-footer">
+                                <span>Current assessment</span>
+                                <strong id="floodCardRisk">Awaiting data</strong>
+                            </div>
+
+                        </div>
+
+                    </article>
+
+
+                    <!-- Cyclone -->
+                    <article class="disaster-card">
+
+                        <div class="card-icon cyclone-icon">
+                            ◌
+                        </div>
+
+                        <div class="card-content">
+
+                            <div class="card-topline">
+                                <span>02</span>
+                                <span class="card-status">
+                                    Monitoring
+                                </span>
+                            </div>
+
+                            <h3>Cyclone Risk</h3>
+
+                            <p>
+                                Observe atmospheric conditions and identify
+                                regions that may need closer monitoring.
+                            </p>
+
+                            <div class="risk-bar">
+                                <span style="width: 0%" id="cycloneBar"></span>
+                            </div>
+
+                            <div class="card-footer">
+                                <span>Current assessment</span>
+                                <strong id="cycloneCardRisk">Awaiting data</strong>
+                            </div>
+
+                        </div>
+
+                    </article>
+
+
+                    <!-- Earthquake -->
+                    <article class="disaster-card">
+
+                        <div class="card-icon earthquake-icon">
+                            ≋
+                        </div>
+
+                        <div class="card-content">
+
+                            <div class="card-topline">
+                                <span>03</span>
+                                <span class="card-status">
+                                    Monitoring
+                                </span>
+                            </div>
+
+                            <h3>Earthquake Risk</h3>
+
+                            <p>
+                                Track seismic activity and historical
+                                patterns to support risk awareness.
+                            </p>
+
+                            <div class="risk-bar">
+                                <span style="width: 0%" id="earthquakeBar"></span>
+                            </div>
+
+                            <div class="card-footer">
+                                <span>Current assessment</span>
+                                <strong id="earthquakeCardRisk">
+                                    Awaiting data
+                                </strong>
+                            </div>
+
+                        </div>
+
+                    </article>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =========================
+             RISK DASHBOARD
+        ========================== -->
+        <section class="section section-dark" id="risk">
+
+            <div class="container">
+
+                <div class="section-heading light">
+
+                    <div>
+                        <span class="eyebrow">RISK ENGINE</span>
+
+                        <h2>
+                            Location-based risk assessment
+                        </h2>
+                    </div>
+
+                    <p>
+                        Select a region to prepare for future integration
+                        with AASRA's real risk-analysis services.
+                    </p>
+
+                </div>
+
+
+                <div class="dashboard-grid">
+
+                    <div class="dashboard-panel">
+
+                        <div class="panel-title">
+                            <div>
+                                <span class="eyebrow">REGION</span>
+                                <h3>Assessment Area</h3>
+                            </div>
+                        </div>
+
+                        <label for="regionSelect">
+                            Select region
+                        </label>
+
+                        <select id="regionSelect">
+
+                            <option value="central">
+                                Central India
+                            </option>
+
+                            <option value="north">
+                                Northern India
+                            </option>
+
+                            <option value="east">
+                                Eastern India
+                            </option>
+
+                            <option value="west">
+                                Western India
+                            </option>
+
+                            <option value="south">
+                                Southern India
+                            </option>
+
+                        </select>
+
+
+                        <div class="assessment-message" id="assessmentMessage">
+
+                            <span class="message-icon">i</span>
+
+                            <p>
+                                Live risk assessment will appear here
+                                after the backend and ML services are
+                                connected.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="dashboard-panel">
+
+                        <div class="panel-title">
+                            <div>
+                                <span class="eyebrow">MAP</span>
+                                <h3>Operational View</h3>
+                            </div>
+
+                            <span class="map-label">
+                                Interactive
+                            </span>
+                        </div>
+
+                        <div id="map"></div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =========================
+             SATELLITE SECTION
+        ========================== -->
+        <section class="section" id="satellite">
+
+            <div class="container">
+
+                <div class="satellite-section">
+
+                    <div class="satellite-copy">
+
+                        <span class="eyebrow">
+                            SATELLITE INTELLIGENCE
+                        </span>
+
+                        <h2>
+                            See what is happening on the ground.
+                        </h2>
+
+                        <p>
+                            AASRA is designed to integrate satellite
+                            observations with disaster intelligence,
+                            helping analysts understand large-area
+                            environmental changes.
+                        </p>
+
+                        <div class="feature-list">
+
+                            <div>
+                                <span>✓</span>
+                                Flood and surface-water monitoring
+                            </div>
+
+                            <div>
+                                <span>✓</span>
+                                Cyclone and cloud observation
+                            </div>
+
+                            <div>
+                                <span>✓</span>
+                                Multi-source disaster intelligence
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="satellite-visual">
+
+                        <div class="orbit orbit-one"></div>
+                        <div class="orbit orbit-two"></div>
+
+                        <div class="earth">
+                            <div class="earth-glow"></div>
+                            <span>EARTH</span>
+                        </div>
+
+                        <div class="satellite-object">
+                            <span></span>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =========================
+             ALERTS
+        ========================== -->
+        <section class="section alerts-section">
+
+            <div class="container">
+
+                <div class="section-heading">
+
+                    <div>
+                        <span class="eyebrow">ALERT CENTER</span>
+
+                        <h2>
+                            Designed for timely action
+                        </h2>
+                    </div>
+
+                    <p>
+                        AASRA can connect verified data sources and
+                        intelligence services to surface important
+                        disaster information.
+                    </p>
+
+                </div>
+
+
+                <div class="alert-list">
+
+                    <div class="alert-item">
+
+                        <div class="alert-number">01</div>
+
+                        <div>
+                            <strong>
+                                Data verification first
+                            </strong>
+
+                            <p>
+                                Alerts should be based on verified
+                                information rather than unconfirmed
+                                assumptions.
+                            </p>
+                        </div>
+
+                    </div>
+
+
+                    <div class="alert-item">
+
+                        <div class="alert-number">02</div>
+
+                        <div>
+                            <strong>
+                                Risk is not certainty
+                            </strong>
+
+                            <p>
+                                A risk assessment indicates conditions
+                                that deserve attention; it does not
+                                guarantee that a disaster will occur.
+                            </p>
+                        </div>
+
+                    </div>
+
+
+                    <div class="alert-item">
+
+                        <div class="alert-number">03</div>
+
+                        <div>
+                            <strong>
+                                Human decisions remain important
+                            </strong>
+
+                            <p>
+                                AASRA is designed to support emergency
+                                teams and communities, not replace
+                                official authorities.
+                            </p>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =========================
+             ABOUT
+        ========================== -->
+        <section class="section about-section" id="about">
+
+            <div class="container about-grid">
+
+                <div>
+                    <span class="eyebrow">ABOUT AASRA</span>
+
+                    <h2>
+                        From raw data to meaningful disaster intelligence.
+                    </h2>
+                </div>
+
+                <div>
+
+                    <p>
+                        AASRA is a disaster-management platform concept
+                        focused on bringing environmental data,
+                        disaster monitoring, risk assessment, machine
+                        learning and satellite intelligence together.
+                    </p>
+
+                    <p>
+                        The platform is being developed in stages so
+                        that every major feature can be tested with
+                        real data before being used in the final system.
+                    </p>
+
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <!-- =========================
+         FOOTER
+    ========================== -->
+    <footer class="footer">
+
+        <div class="container footer-content">
+
+            <div class="brand footer-brand">
+                <span class="brand-mark">A</span>
+
+                <span>
+                    <strong>AASRA</strong>
+                    <small>Disaster Intelligence</small>
+                </span>
+            </div>
+
+            <p>
+                Built to support better disaster awareness and
+                preparedness.
+            </p>
+
+            <span class="footer-year">
+                © <span id="currentYear"></span> AASRA
+            </span>
+
+        </div>
+
+    </footer>
+
+
+    <!-- Leaflet map library -->
+    <script
+        src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+        crossorigin=""
+    ></script>
+
+    <!-- AASRA JavaScript -->
+    <script src="script.js"></script>
+
+</body>
+</html>
