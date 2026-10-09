@@ -1,1 +1,143 @@
+from pathlib import Path
 
+import numpy as np
+import rasterio
+import torch
+import torch.nn as nn
+
+
+class DoubleConv(nn.Module):
+    def __init__(self, in_channels, out_channels):
+        super().__init__()
+        self.block = nn.Sequential(
+            nn.Conv2d(in_channels, out_channels, 3, padding=1),
+            nn.BatchNorm2d(out_channels),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(out_channels, out_channels, 3, padding=1),
+            nn.BatchNorm2d(out_channels),
+            nn.ReLU(inplace=True),
+        )
+
+    def forward(self, x):
+        return self.block(x)
+
+
+class AASRAUNet(nn.Module):
+    def __init__(self, in_channels=2):
+        super().__init__()
+
+        self.enc1 = DoubleConv(in_channels, 16)
+        self.enc2 = DoubleConv(16, 32)
+        self.enc3 = DoubleConv(32, 64)
+
+        self.pool = nn.MaxPool2d(2)
+        self.bottleneck = DoubleConv(64, 128)
+
+        self.up3 = nn.ConvTranspose2d(128, 64, 2, stride=2)
+        self.dec3 = DoubleConv(128, 64)
+
+        self.up2 = nn.ConvTranspose2d(64, 32, 2, stride=2)
+        self.dec2 = DoubleConv(64, 32)
+
+        self.up1 = nn.ConvTranspose2d(32, 16, 2, stride=2)
+        self.dec1 = DoubleConv(32, 16)
+
+        self.out = nn.Conv2d(16, 1, 1)
+
+    def forward(self, x):
+        a = self.enc1(x)
+        b = self.enc2(self.pool(a))
+        c = self.enc3(self.pool(b))
+
+        z = self.bottleneck(self.pool(c))
+
+        z = self.dec3(torch.cat([self.up3(z), c], dim=1))
+        z = self.dec2(torch.cat([self.up2(z), b], dim=1))
+        z = self.dec1(torch.cat([self.up1(z), a], dim=1))
+
+        return self.out(z)
+
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+MODEL_PATH = BASE_DIR / "models" / "aasra_flood_unet_improved.pth"
+
+DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+_model = None
+
+
+def load_model():
+    global _model
+
+    if _model is not None:
+        return _model
+
+    if not MODEL_PATH.exists():
+        raise FileNotFoundError(
+            f"Trained flood model not found at {MODEL_PATH}"
+        )
+
+    checkpoint = torch.load(
+        MODEL_PATH,
+        map_location=DEVICE,
+        weights_only=True,
+    )
+
+    network = AASRAUNet(in_channels=2).to(DEVICE)
+    network.load_state_dict(checkpoint["model_state_dict"])
+    network.eval()
+
+    _model = network
+    return _model
+
+
+def predict_flood(image_path):
+    """
+    Predict water pixels from a two-band Sentinel-1 GeoTIFF.
+    Returns a binary mask and summary statistics.
+    """
+
+    with rasterio.open(image_path) as src:
+        if src.count != 2:
+            raise ValueError(
+                "Input must contain exactly two Sentinel-1 bands."
+            )
+
+        image = src.read().astype(np.float32)
+
+    image = np.nan_to_num(
+        image, nan=0.0, posinf=0.0, neginf=0.0
+    )
+
+    # Match the per-image, per-band normalization used during training.
+    for band in range(image.shape[0]):
+        values = image[band]
+        low, high = np.percentile(values, [2, 98])
+
+        if high > low:
+            image[band] = np.clip(
+                (values - low) / (high - low), 0, 1
+            )
+        else:
+            image[band] = 0
+
+    tensor = torch.from_numpy(image.copy()).unsqueeze(0).to(DEVICE)
+
+    network = load_model()
+
+    with torch.no_grad():
+        probabilities = torch.sigmoid(network(tensor))[0, 0]
+        probabilities = probabilities.cpu().numpy()
+
+    water_mask = probabilities >= 0.5
+
+    return {
+        "width": int(water_mask.shape[1]),
+        "height": int(water_mask.shape[0]),
+        "water_pixel_count": int(water_mask.sum()),
+        "water_pixel_percentage": round(
+            float(water_mask.mean() * 100), 2
+        ),
+        "threshold": 0.5,
+        "mask": water_mask.astype(np.uint8).tolist(),
+    }
