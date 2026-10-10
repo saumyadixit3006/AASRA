@@ -68,3 +68,67 @@ def search_asf_sentinel1(
         "count": len(results),
         "scenes": results,
     }
+def search_asf_sentinel1(
+    latitude: float,
+    longitude: float,
+    days_back: int = 30,
+    max_results: int = 5,
+):
+    """Search ASF for Sentinel-1 GRD-HD scenes."""
+
+    if not -90 <= latitude <= 90:
+        raise ValueError("Invalid latitude")
+
+    if not -180 <= longitude <= 180:
+        raise ValueError("Invalid longitude")
+
+    if days_back < 1 or max_results < 1:
+        raise ValueError("days_back and max_results must be positive")
+
+    end = datetime.now(timezone.utc)
+    start = end - timedelta(days=days_back)
+
+    params = {
+        "platform": "Sentinel-1",
+        "processingLevel": "GRD_HD",
+        "intersectsWith": f"POINT({longitude} {latitude})",
+        "start": start.strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "end": end.strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "maxResults": max_results,
+        "output": "json",
+    }
+
+    response = requests.get(
+        "https://api.daac.asf.alaska.edu/services/search/param",
+        params=params,
+        timeout=60,
+    )
+    response.raise_for_status()
+    data = response.json()
+
+    if isinstance(data, dict):
+        scenes = data.get("results", [data])
+    elif isinstance(data, list):
+        scenes = data
+    else:
+        scenes = []
+
+    results = []
+    for scene in scenes:
+        if not isinstance(scene, dict):
+            continue
+
+        results.append({
+            "scene_name": scene.get("sceneName"),
+            "platform": scene.get("platform"),
+            "start_time": scene.get("startTime"),
+            "processing_level": scene.get("processingLevel"),
+            "download_url": scene.get("downloadUrl"),
+        })
+
+    return {
+        "provider": "Alaska Satellite Facility",
+        "product": "Sentinel-1 GRD-HD",
+        "count": len(results),
+        "scenes": results,
+    }
