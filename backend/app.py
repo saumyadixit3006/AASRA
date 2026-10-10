@@ -8,7 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from services.weather import get_weather
 from services.earthquake import get_earthquakes
 from services.satellite import get_satellite_layer
-
+from services.satellite_connection import search_asf_sentinel1
 from risk.flood import calculate_flood_risk
 from risk.cyclone import calculate_cyclone_risk
 from risk.earthquake import calculate_earthquake_risk
