@@ -1,0 +1,25 @@
+
+# Secrets
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Datasets and trained models
+data/raw/*
+data/processed/*
+ml/*/dataset/*
+ml/*/model/*
+
+# Keep folder placeholders
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+!ml/*/dataset/.gitkeep
+!ml/*/model/.gitkeep
+
+# Temporary files
+*.log
+.DS_Store
