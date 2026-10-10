@@ -9,6 +9,7 @@ from services.weather import get_weather
 from services.earthquake import get_earthquakes
 from services.satellite import get_satellite_layer
 from services.satellite_connection import search_asf_sentinel1
+
 from risk.flood import calculate_flood_risk
 from risk.cyclone import calculate_cyclone_risk
 from risk.earthquake import calculate_earthquake_risk
@@ -157,7 +158,46 @@ def satellite():
             detail=f"Satellite layer service failed: {str(exc)}",
         )
 
+# ---------------------------------------------------------
+# ASF SENTINEL-1 SATELLITE SCENE SEARCH
+# ---------------------------------------------------------
 
+@app.get("/api/satellite/scenes")
+def satellite_scenes(
+    latitude: float = 22.7196,
+    longitude: float = 75.8577,
+    days_back: int = 30,
+    max_results: int = 5,
+):
+    if not -90 <= latitude <= 90:
+        raise HTTPException(
+            status_code=400,
+            detail="Latitude must be between -90 and 90.",
+        )
+
+    if not -180 <= longitude <= 180:
+        raise HTTPException(
+            status_code=400,
+            detail="Longitude must be between -180 and 180.",
+        )
+
+    try:
+        return search_asf_sentinel1(
+            latitude=latitude,
+            longitude=longitude,
+            days_back=days_back,
+            max_results=max_results,
+        )
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=400,
+            detail=str(exc),
+        )
+    except Exception as exc:
+        raise HTTPException(
+            status_code=502,
+            detail=f"ASF satellite search failed: {str(exc)}",
+        )
 # ---------------------------------------------------------
 # FLOOD RISK — RULE-BASED ASSESSMENT
 # ---------------------------------------------------------
